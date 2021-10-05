@@ -13,7 +13,10 @@ CHIP FullAdder {
         carry;   // Left bit of a + b + c
 
     PARTS:
+    //The first HA gets the sum and carry of a and b.
     HalfAdder(a=a, b=b, sum=ABsum, carry=ABcarry);
+    //The second HA gets the sum and carry of the previous sum and c.
     HalfAdder(a=ABsum, b=c, sum=sum, carry=ABCcarry);
+    //The OR gets the final carry, by comparing the existing carries.
     Or(a=ABcarry, b=ABCcarry, out=carry);
 }
