@@ -1,0 +1,30 @@
+// Gray Code Converter
+// File name: GrayCode.hdl
+
+/**
+ * GrayCode gate: 
+ * 3-input binary to gray code coverter
+ *       
+ */
+
+CHIP GrayCode {
+    IN b[3];
+    OUT out[3];
+
+    PARTS:
+        //G2
+        And(a=b[2], b=true, out=out[2]);
+
+        //G1
+        Not(in=b[1], out=Notb1);
+        And(a=b[2], b=Notb1, out=b2Notb1);
+        Not(in=b[2], out=Notb2);
+        And(a=b[1], b=Notb2, out=b1Notb2);
+        Or(a=b2Notb1, b=b1Notb2, out=out[1]);
+
+        //G0
+        And(a=Notb1, b=b[0], out=b0Notb1);
+        Not(in=b[0], out=Notb0);
+        And(a=b[1], b=Notb0, out=b1Notb0);
+        Or(a=b0Notb1, b=b1Notb0, out=out[0]);
+}
