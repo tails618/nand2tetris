@@ -1,0 +1,13 @@
+/**
+ * 16-bit Negate:
+ * out = -in (2's complement arithmetic negation)
+ */
+
+CHIP Negate16 {
+    IN in[16];
+    OUT out[16];
+
+    PARTS:
+        Not16(in=in, out=NotIn);
+        Add16(a=NotIn, b[1..15]=false, b[0]=true, out=out);
+}
