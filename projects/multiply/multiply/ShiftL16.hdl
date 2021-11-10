@@ -1,0 +1,15 @@
+// This file is an extension of the nand2Tetris curriculum
+// File name: multiplty/ShiftL16.hdl
+
+/**
+ * shift:
+ * for i=1..15: out[i] = in[i-1], out[0]=0
+ */
+
+CHIP ShiftL16 {
+    IN in[16];
+    OUT out[16];
+
+    PARTS:
+    
+}
