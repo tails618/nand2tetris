@@ -1,0 +1,14 @@
+CHIP Countdown16 {
+    IN in[16], load;
+    OUT out[16];
+
+    PARTS:
+        //Store input in chip
+        Register(in=MuxOut, load=load, out=RegOut);
+        //Decrement input
+        Add16(a=true, b=RegOut, out=SubOut);
+        //Check if the number is true
+        And16(a=false,b=RegOut, out=AndOut);
+        //Decides between storing new input and decrementing/doing nothing
+        Mux4Way16(a=SubOut, b=RegOut, c=in, d=in, sel[0]=AndOut[0], sel[1]=load, out=MuxOut);
+}
