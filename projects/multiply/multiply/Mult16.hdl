@@ -11,6 +11,53 @@ CHIP Mult16 {
     OUT out[16];
 
     PARTS:
-  
-   
+        //Gets all the numbers to be added (either a shifted, or a string of 0s)
+        Mux16(a=false, b=a, sel=b[0], out=Mux0);
+        ShiftL16(in=a, out=S1);
+        Mux16(a=false, b=S1, sel=b[1], out=Mux1);
+        ShiftL16(in=S1, out=S2);
+        Mux16(a=false, b=S2, sel=b[2], out=Mux2);
+        ShiftL16(in=S2, out=S3);
+        Mux16(a=false, b=S3, sel=b[3], out=Mux3);
+        ShiftL16(in=S3, out=S4);
+        Mux16(a=false, b=S4, sel=b[4], out=Mux4);
+        ShiftL16(in=S4, out=S5);
+        Mux16(a=false, b=S5, sel=b[5], out=Mux5);
+        ShiftL16(in=S5, out=S6);
+        Mux16(a=false, b=S6, sel=b[6], out=Mux6);
+        ShiftL16(in=S6, out=S7);
+        Mux16(a=false, b=S7, sel=b[7], out=Mux7);
+        ShiftL16(in=S7, out=S8);
+        Mux16(a=false, b=S8, sel=b[8], out=Mux8);
+        ShiftL16(in=S8, out=S9);
+        Mux16(a=false, b=S9, sel=b[9], out=Mux9);
+        ShiftL16(in=S9, out=S10);
+        Mux16(a=false, b=S10, sel=b[10], out=Mux10);
+        ShiftL16(in=S10, out=S11);
+        Mux16(a=false, b=S11, sel=b[11], out=Mux11);
+        ShiftL16(in=S11, out=S12);
+        Mux16(a=false, b=S12, sel=b[12], out=Mux12);
+        ShiftL16(in=S12, out=S13);
+        Mux16(a=false, b=S13, sel=b[13], out=Mux13);
+        ShiftL16(in=S13, out=S14);
+        Mux16(a=false, b=S14, sel=b[14], out=Mux14);
+        ShiftL16(in=S14, out=S15);
+        Mux16(a=false, b=S15, sel=b[15], out=Mux15);
+        //Adds all the numbers, pairing the first two together, then the next two, etc
+        Add16(a=Mux0, b=Mux1, out=Add00);
+        Add16(a=Mux2, b=Mux3, out=Add01);
+        Add16(a=Mux4, b=Mux5, out=Add02);
+        Add16(a=Mux6, b=Mux7, out=Add03);
+        Add16(a=Mux8, b=Mux9, out=Add04);
+        Add16(a=Mux10, b=Mux11, out=Add05);
+        Add16(a=Mux12, b=Mux13, out=Add06);
+        Add16(a=Mux14, b=Mux15, out=Add07);
+        Add16(a=Add00, b=Add01, out=Add20);
+        Add16(a=Add02, b=Add03, out=Add21);
+        Add16(a=Add04, b=Add05, out=Add22);
+        Add16(a=Add06, b=Add07, out=Add23);
+        Add16(a=Add20, b=Add21, out=Add30);
+        Add16(a=Add22, b=Add23, out=Add31);
+        Add16(a=Add30, b=Add31, out=out);
+
 }
