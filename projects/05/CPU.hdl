@@ -39,5 +39,34 @@ CHIP CPU {
         pc[15];          // address of next instruction
 
     PARTS:
-    // Put your code here:
+        //Checks if A or C command
+        Mux16(a=instruction, b=ALUOut, sel=instruction[15], out=Mux1Out);
+        //A-register
+        Or(a=instruction[15], b=instruction[5], out=ARegAnd);
+        ARegister(in=Mux1Out, load=ARegAnd, out=ARegOut, out[0..14]=addressM);
+        //D-register
+        And(a=instruction[15], b=instruction[4], out=DRegAnd);
+        DRegister(in=ALUOut, load=DRegAnd, out=DRegOut);
+        //Decides what to send to ALU
+        Mux16(a=ARegOut, b=inM, sel=instruction[12], out=Mux2Out);
+        //ALU - out goes to ALUOut and outM, status bits go to variables
+        ALU(x=DRegOut, y=Mux2Out, zx=instruction[11], nx=instruction[10], zy=instruction[9], ny=instruction[8], f=instruction[7], no=instruction[6], out=ALUOut, out=outM, zr=zrOut, ng=ngOut);
+        //JEQ variable
+        And(a=zrOut, b=instruction[1], out=JEQtemp);
+        And(a=JEQtemp, b=instruction[15], out=JEQ);
+        //JLT variable
+        And(a=ngOut, b=instruction[2], out=JLTtemp);
+        And(a=JLTtemp, b=instruction[15], out=JLT);
+        //JGT variable
+        Not(in=zrOut, out=NotZr);
+        Not(in=ngOut, out=NotNg);
+        And(a=NotZr, b=NotNg, out=positive);
+        And(a=positive, b=instruction[0], out=JGTtemp);
+        And(a=JGTtemp, b=instruction[15], out=JGT);
+        //PC
+        Or(a=JLT, b=JGT, out=JLTorJGT);
+        Or(a=JLTorJGT, b=JEQ, out=pcload);
+        PC(in=ARegOut, load=pcload, inc=true, reset=reset, out[0..14]=pc);
+        //writeM output
+        And(a=instruction[15], b=instruction[3], out=writeM);
 }
