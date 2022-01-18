@@ -14,11 +14,9 @@ for i in f:
 #remove spaces and tabs from strings in lines
 counter = 0
 for i in lines:
-	if i.find(' ') != -1 or i.find('	') != -1:
-		lines[counter] = i.replace(" ","")
-		lines[counter] = i.replace("	","")
-	else:
-		counter += 1
+	lines[counter] = i.replace(" ","")
+	lines[counter] = i.replace("	","")
+	counter += 1
 
 #if the line is blank or a comment, add it to a list of lines to remove
 #we cant remove the line here, because that would disrupt the for loop
