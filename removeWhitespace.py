@@ -1,8 +1,11 @@
 #removes ALL whitespace and comments from a file, aside from newlines.
+#to use, run "python removeWhitespace.py filename" in a command line. Filename should not have an extension, and the file should end in .in.
+#you may have to change the command depending on your computer setup.
+#for example, you may have to precede removeWhitespace.py with a .\ or run python3 instead of python.
 from sys import argv
 
-f = open(argv[1])
-fo = open(argv[2], "w")
+f = open(f"{argv[1]}.in")
+fo = open(f"{argv[1]}.out", "w")
 
 #recursive function to remove whitespace and comments
 def stripLine(line):
