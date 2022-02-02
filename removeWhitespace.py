@@ -1,40 +1,40 @@
+#removes ALL whitespace and comments from a file, aside from newlines.
 from sys import argv
 
 f = open(argv[1])
 fo = open(argv[2], "w")
 
-lines=[]
-linesToRemove=[]
+#recursive function to remove whitespace and comments
+def stripLine(line):
+    firstChar = line[0]
+    #if the line is blank or a comment, return an empty string.
+    if firstChar == '\n' or firstChar == '/':
+        return ''
+    #if the line begins with a space or a tab, return the result of running this function on the rest of the line.
+    elif firstChar == ' ' or firstChar == '\t':
+        return stripLine(line[1:])
+    #if the line doesn't begin with a space or a tab and is greater than one character, return the first character plus the result of running this function on the rest of the line.
+    elif len(line) > 1:
+        return firstChar + stripLine(line[1:])
+    #if none of those apply, return the first character.
+    else:
+        return firstChar
 
-#read the file line by line
-for i in f:
-	#adds the line to a list of lines
-	lines.append(i)
-
-#remove spaces and tabs from strings in lines
+#creates a list of the lines in the file, and a counter variable
+lines = f.readlines()
 counter = 0
+finalString = ''
+
+#for each line in the file, strip the whitespace and comments, and write the result to the output file. Also, add newlines to the output file, EXCEPT the final line.
 for i in lines:
-	lines[counter] = i.replace(" ","")
-	lines[counter] = i.replace("	","")
-	counter += 1
-
-#if the line is blank or a comment, add it to a list of lines to remove
-#we cant remove the line here, because that would disrupt the for loop
-counter = 0
-for i in lines:
-	if i == "\n" or i.startswith("//"):
-		linesToRemove.insert(0,counter)
-	#if the line contains a comment but has code prior to the comment, remove the comment
-	if i.find("//") != -1:
-		lines[counter] = i[:i.find("//")]
-		lines[counter] = lines[counter] + "\n"
-	counter += 1
-
-#removes the lines from the list of lines
-for i in linesToRemove:
-	lines.pop(i)
-
-#convert the list to a string
-finalString = ''.join(lines)
+    if i != '\n' and i != ' ' and i != '\t' and i != '':
+        strippedLine = stripLine(i)
+        if strippedLine != '':
+            finalString = finalString + strippedLine
+            if counter != len(lines) - 1:
+                finalString = finalString + '\n'
+    counter += 1
 
 fo.write(finalString)
+f.close()
+fo.close()
