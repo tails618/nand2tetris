@@ -9,10 +9,21 @@ fo = open(f"{argv[1]}.out", "w")
 
 #recursive function to remove whitespace and comments
 def stripLine(line):
+    isComment = False
     firstChar = line[0]
     #if the line is blank or a comment, return an empty string.
     if firstChar == '\n' or firstChar == '/':
         return ''
+    elif firstChar == '*' and not isComment:
+        if line.count('*') == 1:
+            isComment = True
+            return ''
+    elif isComment:
+        if line.count('*/') == 1:
+            isComment = False
+            return '' + stripLine(line[line.find('*/')+2:])
+        else:
+            return ''
     #if the line begins with a space or a tab, return the result of running this function on the rest of the line.
     elif firstChar == ' ' or firstChar == '\t':
         return stripLine(line[1:])
