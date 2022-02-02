@@ -1,3 +1,8 @@
+#assembler for translating .asm assembly files to .hack binary files
+#to use, run "python assembler.py filename" in a command line. Filename should not have an extension, and the file should end in .asm.
+#you may have to change the command depending on your computer setup.
+#for example, you may have to precede assembler.py with a .\ or run python3 instead of python.
+
 from sys import argv
 from os import system
 
@@ -59,40 +64,46 @@ jumpDict = {
 
 #removes whitespace and comments from the input file, returns it as a string
 def removeWhitespaceAndComments(f):
-    lines=[]
-    linesToRemove=[]
+    def stripLine(line):
+        isComment = False
+        firstChar = line[0]
+        #if the line is blank or a comment, return an empty string.
+        if firstChar == '\n' or firstChar == '/':
+            return ''
+        elif firstChar == '*' and not isComment:
+            if line.count('*') == 1:
+                isComment = True
+                return ''
+        elif isComment:
+            if line.count('*/') == 1:
+                isComment = False
+                return '' + stripLine(line[line.find('*/')+2:])
+            else:
+                return ''
+        #if the line begins with a space or a tab, return the result of running this function on the rest of the line.
+        elif firstChar == ' ' or firstChar == '\t':
+            return stripLine(line[1:])
+        #if the line doesn't begin with a space or a tab and is greater than one character, return the first character plus the result of running this function on the rest of the line.
+        elif len(line) > 1:
+            return firstChar + stripLine(line[1:])
+        #if none of those apply, return the first character.
+        else:
+            return firstChar
 
-    #read the file line by line
-    for i in f:
-        #adds the line to a list of lines
-        lines.append(i)
-
-    #remove spaces and tabs from strings in lines
+    #creates a list of the lines in the file, and a counter variable
+    lines = f.readlines()
     counter = 0
-    for i in lines:
-        lines[counter] = i.replace(" ","")
-        lines[counter] = i.replace("	","")
-        counter += 1\
+    finalString = ''
 
-    #if the line is blank or a comment, add it to a list of lines to remove
-    #we cant remove the line here, because that would disrupt the for loop
-    counter = 0
+    #for each line in the file, strip the whitespace and comments, and write the result to the output file. Also, add newlines to the output file, EXCEPT the final line.
     for i in lines:
-        if i == "\n" or i.startswith("//"):
-            linesToRemove.insert(0,counter)
-        #if the line contains a comment but has code prior to the comment, remove the comment
-        if i.find("//") != -1:
-            lines[counter] = i[:i.find("//")]
-            lines[counter] = lines[counter] + "\n"
+        if i != '\n' and i != ' ' and i != '\t' and i != '':
+            strippedLine = stripLine(i)
+            if strippedLine != '':
+                finalString = finalString + strippedLine
+                if counter != len(lines) - 1:
+                    finalString = finalString + '\n'
         counter += 1
-
-    #removes the lines from the list of lines
-    for i in linesToRemove:
-        lines.pop(i)
-
-    #convert the list to a string
-    finalString = ''.join(lines)
-
     return finalString
 
 #gets the command type for a string s
@@ -121,40 +132,42 @@ def cCommand(s):
         destBin = destDict.get(destStr)
         compIndex0 = destIndex + 1 #gets index of beginning of comp command, if there is a dest
     else:
+        destBin = '000'
         compIndex0 = 0 #gets index of beginning of comp command if there is no dest
 
     #get jump command
     jumpIndex = s.find(';')
     if jumpIndex != -1:
-        jumpStr = s[jumpIndex:]
+        jumpStr = s[jumpIndex + 1:]
         jumpBin = jumpDict.get(jumpStr)
         compIndex1 = jumpIndex #get index of end of comp command if there is a jump
     else:
+        jumpBin = '000'
         compIndex1 = len(s) #get index of end of comp command if there is no jump
 
     #get comp command
     compStr = s[compIndex0:compIndex1]
     compBin = compDict.get(compStr)
 
-    #build entire command
-    outBin = ""
-    if destBin in locals():
-        outBin += destBin
-    outBin += compBin
-    if jumpBin in locals():
-        outBin += jumpBin
-    outBin += "\n"
+    outBin = "111" + compBin + destBin + jumpBin
     return outBin
 
-fileIn = open(argv[1])
-fileOut = open(argv[2], "w")
+#initializes input and output files
+fileIn = open(f"{argv[1]}.asm")
+fileOut = open(f"{argv[1]}.hack", "w")
+
 #empties output file
 fileOut.write('')
 fileOut.close()
-fileOut = open(argv[2], "a")
+
+#opens output file in append mode, so it can continuously write
+fileOut = open(f"{argv[1]}.hack", "a")
+
 formattedAsm = removeWhitespaceAndComments(fileIn)
-for i in formattedAsm:
-    if getCommandType(formattedAsm) == "A_COMMAND":
-        fileOut.write(aCommand(formattedAsm))
+
+for i in formattedAsm.splitlines():
+    if getCommandType(i) == "A_COMMAND":
+        fileOut.write(aCommand(i))
     else:
-        fileOut.write(cCommand(formattedAsm))
+        fileOut.write(cCommand(i))
+    fileOut.write('\n')
