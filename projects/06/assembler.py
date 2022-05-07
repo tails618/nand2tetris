@@ -1,10 +1,10 @@
 #assembler for translating .asm assembly files to .hack binary files
-#to use, run "python assembler.py filename" in a command line. Filename should not have an extension, and the file should end in .asm.
+#to use, run "python assembler.py filename.asm" in a command line.
 #you may have to change the command depending on your computer setup.
 #for example, you may have to precede assembler.py with a .\ or run python3 instead of python.
 
 from sys import argv
-from os import system
+from os import remove, system
 
 #dictionary for comp command
 compDict = {
@@ -110,6 +110,8 @@ def removeWhitespaceAndComments(f):
 def getCommandType(s):
     if s[0] == "@":
         return "A_COMMAND"
+    elif s[0] == "(":
+        return "L_COMMAND"
     else:
         return "C_COMMAND"
 
@@ -152,22 +154,63 @@ def cCommand(s):
     outBin = "111" + compBin + destBin + jumpBin
     return outBin
 
+#dictionary for storing commands
+symbolTable = {}
+
 #initializes input and output files
-fileIn = open(f"{argv[1]}.asm")
-fileOut = open(f"{argv[1]}.hack", "w")
+fileIn = open(f"{argv[1]}")
+fileOut = open(f"{argv[1][:-4]}.hack", "w")
 
 #empties output file
 fileOut.write('')
 fileOut.close()
 
 #opens output file in append mode, so it can continuously write
-fileOut = open(f"{argv[1]}.hack", "a")
+fileOut = open(f"{argv[1][:-4]}.hack", "a")
 
+#remove whitespace from input file
 formattedAsm = removeWhitespaceAndComments(fileIn)
+lines = formattedAsm.splitlines()
 
-for i in formattedAsm.splitlines():
-    if getCommandType(i) == "A_COMMAND":
-        fileOut.write(aCommand(i))
+counter = 0
+for i in range(0, len(lines)):
+    if getCommandType(lines[i]) == 'L_COMMAND':
+        symbolTable[counter] = lines[i]
     else:
-        fileOut.write(cCommand(i))
+        counter += 1
+
+for i in range(0, len(lines)):
+    #if it's an a command
+    if getCommandType(lines[i]) == "A_COMMAND":
+        cmdContent = lines[i][1:]
+        #if it's NOT a symbol, write the binary representation of the command to the output file
+        if cmdContent.isdigit():
+            fileOut.write(aCommand(lines[i]))
+        #if it IS a symbol
+        else:
+            #if it's in the symbol table, get the address of the symbol and write the binary representation of the command to the output file
+            if cmdContent in symbolTable.values():
+                fileOut.write(aCommand('@' + symbolTable.get(cmdContent)))
+            #if it's not in the symbol table, figure out the address of the symbol and write the binary representation of the command to the output file
+            else:
+                done = False
+                j = 16
+                while not done:
+                    if j not in symbolTable.values():
+                        fileOut.write(aCommand('@' + str(j)))
+                        done = True
+                    else:
+                        j += 1
+    elif getCommandType(lines[i]) == "C_COMMAND":
+        fileOut.write(cCommand(lines[i]))
     fileOut.write('\n')
+
+#Now it does a convoluted thing to fix the empty lines in the output file because I had no idea why they were there. But it works, so 🤷
+fileIn.close()
+fileOut.close()
+fileIn = open(f"{argv[1][:-4]}.hack")
+finalString = removeWhitespaceAndComments(fileIn)
+fileIn.close()
+fileOut = open(f"{argv[1][:-4]}.hack", 'w')
+fileOut.write(finalString)
+fileOut.close()

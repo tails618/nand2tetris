@@ -60,6 +60,7 @@ class Parser:
                         finalString = finalString + '\n'
             counter += 1
         self.fullString = finalString
+    
     #checks if there are more commands in the input file
     @property
     def hasMoreCommands(self):
@@ -67,17 +68,21 @@ class Parser:
             return True
         else:
             return False
+    
     #gets the next command in the input file
     def advance(self):
         self.currentInstruction = self.instructions[self.instructions.index(self.currentInstruction) + 1]
+    
     #gets the command type of the current command
     @property
     def commandType(self):
         return self.commandTypeDict[self.currentInstruction.split()[0]]
+    
     #gets the first argument of the current command
     @property
     def arg1(self):
         return self.currentInstruction.split()[1]
+    
     #gets the second argument of the current command
     @property
     def arg2(self):
@@ -115,10 +120,15 @@ class CodeWrite:
         self.write('M=D')
         self.write('@SP')
         self.write('M=M+1')
+    
+    def writeInit(self):
+        self.write('@256')
+        
         
     #writes an arithmetic command to the asm
     def writeArithmetic(self, command):
-        self.pop()
+        if command != 'neg' and command != 'not':
+            self.pop()
         self.write('@SP')
         self.write('AM=M-1')
         if command == 'add':
@@ -126,9 +136,7 @@ class CodeWrite:
         elif command == 'sub':
             self.write('M=M-D')
         elif command == 'neg':
-            self.write('@SP')
-            self.write('AM=M+1')
-            self.write('M=-D')
+            self.write('M=-M')
         elif command in ['eq', 'gt', 'lt']:
             #compares D and the top item on the stack
             self.write('D=M-D')
@@ -157,8 +165,6 @@ class CodeWrite:
         elif command == 'or':
             self.write('M=D|M')
         elif command == 'not':
-            self.write('@SP')
-            self.write('AM=M+1')
             self.write('M=!M')
     
     #writes push and pop commands to the asm
@@ -194,14 +200,14 @@ parsed = Parser(open(argv[1]))
 outName = argv[1].split('.')
 outName = outName[len(outName) - 2]
 outName = outName.split('\\')
-#outName = outName[len(outName) - 1]
-outName = '\\'.join(outName)
-print(outName)
+outName = outName[len(outName) - 1]
 asmCode = CodeWrite(f'{outName}.asm')
-for i in parsed.instructions:
-    if parsed.commandType == 'C_ARITHMETIC':
-        asmCode.writeArithmetic(i)
-    elif parsed.commandType == 'C_PUSH':
+
+while parsed.hasMoreCommands == True:
+    current = parsed.currentInstruction
+    if current == 'C_ARITHMETIC':
+        asmCode.writeArithmetic(current)
+    elif current == 'C_PUSH':
         asmCode.writePushPop('C_PUSH', parsed.arg1, parsed.arg2)
-    elif parsed.commandType == 'C_POP':
+    elif current == 'C_POP':
         asmCode.writePushPop('C_POP', parsed.arg1, parsed.arg2)
