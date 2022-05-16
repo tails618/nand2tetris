@@ -7,7 +7,7 @@ class Parser:
         self.fullString = None
         self.format(self.input)
         self.instructions = self.fullString.splitlines()
-        self.currentInstruction = self.instructions[0]
+        self.currentInstructionIndex = 0
         self.commandTypeDict = {
             'add': 'C_ARITHMETIC',
             'sub': 'C_ARITHMETIC',
@@ -63,13 +63,13 @@ class Parser:
     #checks if there are more commands in the input file
     @property
     def hasMoreCommands(self):
-        if self.instructions.index(self.currentInstruction) < len(self.instructions) - 1:
+        if self.currentInstructionIndex <= len(self.instructions) - 1:
             return True
         else:
             return False
     #gets the next command in the input file
     def advance(self):
-        self.currentInstruction = self.instructions[self.instructions.index(self.currentInstruction) + 1]
+        self.currentInstructionIndex += 1
     #gets the command type of the current command
     @property
     def commandType(self):
@@ -82,6 +82,10 @@ class Parser:
     @property
     def arg2(self):
         return self.currentInstruction.split()[2]
+    #gets the full current instruction
+    @property
+    def currentInstruction(self):
+        return self.instructions[self.currentInstructionIndex]
 
 class CodeWrite:
     def __init__(self, output):
@@ -160,6 +164,8 @@ class CodeWrite:
             self.write('@SP')
             self.write('AM=M+1')
             self.write('M=!M')
+        self.write('@SP')
+        self.write('AM=M+1')
     
     #writes push and pop commands to the asm
     def writePushPop(self, commandType, segment, index):
@@ -198,10 +204,12 @@ outName = outName.split('\\')
 outName = '\\'.join(outName)
 print(outName)
 asmCode = CodeWrite(f'{outName}.asm')
-for i in parsed.instructions:
+
+while parsed.hasMoreCommands:
     if parsed.commandType == 'C_ARITHMETIC':
-        asmCode.writeArithmetic(i)
+        asmCode.writeArithmetic(parsed.currentInstruction)
     elif parsed.commandType == 'C_PUSH':
         asmCode.writePushPop('C_PUSH', parsed.arg1, parsed.arg2)
     elif parsed.commandType == 'C_POP':
         asmCode.writePushPop('C_POP', parsed.arg1, parsed.arg2)
+    parsed.advance()
