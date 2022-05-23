@@ -153,7 +153,7 @@ class Parser:
         if "=" in self.currentInstruction:
             return self.currentInstruction.split("=")[0]
         else:
-            return None
+            return 'null'
 
     #gets the comp mnemonic of the current command
     @property
@@ -172,9 +172,32 @@ class Parser:
         if ";" in self.currentInstruction:
             return self.currentInstruction.split(";")[1]
         else:
-            return None
+            return 'null'
 
+class Code:
+    def __init__(self, parser):
+        self.parser = parser
+    def dest(self):
+        return destDict[self.parser.dest]
+    def comp(self):
+        return compDict[self.parser.comp]
+    def jump(self):
+        return jumpDict[self.parser.jump]
+    def a(self):
+        return bin(int(self.parser.symbol))[2:].zfill(16)
+    def write(self):
+        outputString = ''
+        if self.parser.commandType == "A_COMMAND":
+            outputString = self.a()
+        elif self.parser.commandType == 'C_COMMAND':
+            outputString = '111' + self.comp() + self.dest() + self.jump()
+        parser.fileOut.write(f'{outputString}\n')
+
+
+symbolTable = {}
+index = 0
 parser = Parser()
-'''while parser.hasMoreCommands:
-    print(parser.jump)
-    parser.advance()'''
+code = Code(parser)
+while parser.hasMoreCommands:
+    code.write()
+    parser.advance()
