@@ -175,8 +175,9 @@ class Parser:
             return 'null'
 
 class Code:
-    def __init__(self, parser):
+    def __init__(self, parser, symbolTable):
         self.parser = parser
+        self.nextAvailableRAMAddress = 16
     def dest(self):
         return destDict[self.parser.dest]
     def comp(self):
@@ -184,20 +185,61 @@ class Code:
     def jump(self):
         return jumpDict[self.parser.jump]
     def a(self):
-        return bin(int(self.parser.symbol))[2:].zfill(16)
+        try:
+            return bin(int(self.parser.symbol))[2:].zfill(16)
+        except:
+            if self.parser.symbol in symbolTable:
+                return bin(symbolTable[self.parser.symbol])[2:].zfill(16)
+            else:
+                symbolTable[self.parser.symbol] = self.nextAvailableRAMAddress
+                self.nextAvailableRAMAddress += 1
+                return bin(symbolTable[self.parser.symbol])[2:].zfill(16)
     def write(self):
         outputString = ''
         if self.parser.commandType == "A_COMMAND":
-            outputString = self.a()
+            outputString = self.a() + '\n'
         elif self.parser.commandType == 'C_COMMAND':
-            outputString = '111' + self.comp() + self.dest() + self.jump()
-        parser.fileOut.write(f'{outputString}\n')
+            outputString = '111' + self.comp() + self.dest() + self.jump() + '\n'
+        parser.fileOut.write(outputString)
 
 
-symbolTable = {}
+symbolTable = {
+    "SP": 0,
+    "LCL": 1,
+    "ARG": 2,
+    "THIS": 3,
+    "THAT": 4,
+    "R0": 0,
+    "R1": 1,
+    "R2": 2,
+    "R3": 3,
+    "R4": 4,
+    "R5": 5,
+    "R6": 6,
+    "R7": 7,
+    "R8": 8,
+    "R9": 9,
+    "R10": 10,
+    "R11": 11,
+    "R12": 12,
+    "R13": 13,
+    "R14": 14,
+    "R15": 15,
+    "SCREEN": 16384,
+    "KBD": 24576
+}
+
 index = 0
 parser = Parser()
-code = Code(parser)
+code = Code(parser, symbolTable)
+while parser.hasMoreCommands:
+    if parser.commandType == 'A_COMMAND' or parser.commandType == 'C_COMMAND':
+        index += 1
+    elif parser.commandType == 'L_COMMAND':
+        if not parser.symbol in symbolTable:
+            symbolTable[parser.symbol] = index
+    parser.advance()
+parser.currentInstructionIndex = 0
 while parser.hasMoreCommands:
     code.write()
     parser.advance()

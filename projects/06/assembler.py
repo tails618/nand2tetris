@@ -172,7 +172,7 @@ fileOut = open(f"{argv[1][:-4]}.hack", "a")
 formattedAsm = removeWhitespaceAndComments(fileIn)
 lines = formattedAsm.splitlines()
 
-counter = 0
+counter = 1024
 for i in range(0, len(lines)):
     if getCommandType(lines[i]) == 'L_COMMAND':
         symbolTable[counter] = lines[i]
