@@ -106,7 +106,7 @@ class CodeWrite:
     def write(self, s):
         self.output.write(s + '\n')
     
-    #pops item at SP to D
+    #pops item at SP-1 to D
     def pop(self):
         self.write('@SP')
         self.write('AM=M-1')
@@ -149,12 +149,12 @@ class CodeWrite:
             self.write('M=0')
             self.write(f'@ENDBOOLOP{self.boolnum}')
             #do this if true
-            self.write(f'(@BOOLOP{self.boolnum})')
+            self.write(f'(BOOLOP{self.boolnum})')
             self.write('@SP')
             self.write('A=M')
             self.write('M=-1')
             #do this if not true
-            self.write(f'(@ENDBOOLOP{self.boolnum})')
+            self.write(f'(ENDBOOLOP{self.boolnum})')
             self.boolnum += 1
         elif command == 'and':
             self.write('M=D&M')
@@ -202,7 +202,6 @@ outName = outName[len(outName) - 2]
 outName = outName.split('\\')
 #outName = outName[len(outName) - 1]
 outName = '\\'.join(outName)
-print(outName)
 asmCode = CodeWrite(f'{outName}.asm')
 
 while parsed.hasMoreCommands:
