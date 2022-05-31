@@ -202,7 +202,6 @@ class Code:
             outputString = '111' + self.comp() + self.dest() + self.jump() + '\n'
         parser.fileOut.write(outputString)
 
-
 symbolTable = {
     "SP": 0,
     "LCL": 1,
@@ -228,7 +227,7 @@ symbolTable = {
     "SCREEN": 16384,
     "KBD": 24576
 }
-
+    
 index = 0
 parser = Parser()
 code = Code(parser, symbolTable)
@@ -240,6 +239,8 @@ while parser.hasMoreCommands:
             symbolTable[parser.symbol] = index
     parser.advance()
 parser.currentInstructionIndex = 0
-while parser.hasMoreCommands:
+
+
+'''while parser.hasMoreCommands:
     code.write()
-    parser.advance()
+    parser.advance()'''
